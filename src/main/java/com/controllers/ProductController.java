@@ -8,7 +8,6 @@ import com.model.Product;
 import com.google.gson.Gson;
 import com.model.ApiResponse;
 import com.model.ApiStatus;
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.sql.SQLException;
 import javax.servlet.ServletException;
@@ -17,8 +16,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import utility.Dao;
+import static utility.Utility.getStringBuilder;
 
-@WebServlet(name = "ProductController", urlPatterns = {"/add_product"})
+@WebServlet(name = "ProductController", urlPatterns = {"/product"})
 
 public class ProductController extends HttpServlet {
 
@@ -26,13 +26,8 @@ public class ProductController extends HttpServlet {
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		Gson gson = new Gson();
 		ApiResponse apires = new ApiResponse();
-		final BufferedReader reader = req.getReader();
-		StringBuilder sb = new StringBuilder("");
-		String line = "";
-		while ((line = reader.readLine()) != null) {
-			sb.append(line);
-		}
-		
+		StringBuilder sb = getStringBuilder(req);
+
 		Product product = gson.fromJson(sb.toString(), Product.class);
 		if (product == null) {
 			apires.setStatus(ApiStatus.FAILED);
@@ -56,6 +51,66 @@ public class ProductController extends HttpServlet {
 		resp.setContentType("application/json");
 		resp.getWriter().print(gson.toJson(apires));
 
+	}
+
+	@Override
+	protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		String id = req.getParameter("id");
+	
+						Gson gson = new Gson();
+		
+		ApiResponse apires = new ApiResponse();
+		
+	
+
+		try {
+			if (Dao.deleteProduct(id)) {
+				apires.setMsg("Product deleted Succesfully");
+				System.out.println("deleted");
+				apires.setStatus(ApiStatus.SUCCESS);
+			}
+		} catch (SQLException | ClassNotFoundException ex) {
+			apires.setMsg(ex.getMessage());
+			apires.setStatus(ApiStatus.FAILED);
+		}
+
+		resp.setContentType("application/json");
+		resp.getWriter().print(gson.toJson(apires));		
+	}
+
+	
+	
+
+	@Override
+	protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		Gson gson = new Gson();
+		
+		ApiResponse apires = new ApiResponse();
+		StringBuilder sb = getStringBuilder(req);
+ 	System.out.println(sb.toString());
+		Product product = gson.fromJson(sb.toString(), Product.class);
+		if (product == null) {
+			apires.setStatus(ApiStatus.FAILED);
+			apires.setMsg("Product info is not provided");
+			resp.setContentType("application/json");
+			resp.getWriter().print(gson.toJson(apires));
+			return;
+
+		}
+
+		try {
+			if (Dao.updateProduct(product)) {
+				apires.setMsg("Product Updated Succesfully");
+				System.out.println("aded");
+				apires.setStatus(ApiStatus.SUCCESS);
+			}
+		} catch (SQLException | ClassNotFoundException ex) {
+			apires.setMsg(ex.getMessage());
+			apires.setStatus(ApiStatus.FAILED);
+		}
+
+		resp.setContentType("application/json");
+		resp.getWriter().print(gson.toJson(apires));
 	}
 
 	@Override

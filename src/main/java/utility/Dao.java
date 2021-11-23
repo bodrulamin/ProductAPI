@@ -108,4 +108,35 @@ public class Dao {
 		return result > 0;
 	}
 
+	public static boolean updateProduct(Product product) throws SQLException, ClassNotFoundException {
+		String sql = "update product set name = ?, price = ?, quantity = ?, remarks = ? where id = ?";
+
+		PreparedStatement pst = getConnection().prepareStatement(sql);
+		pst.setString(1, product.getName());
+		pst.setDouble(2, product.getPrice());
+		pst.setInt(3, product.getQuantity());
+		pst.setString(4, product.getRemarks());
+		pst.setInt(5, product.getId());
+
+
+		int result = pst.executeUpdate();
+
+		return result > 0;
+	}
+
+	public static boolean deleteProduct(String id) throws SQLException, ClassNotFoundException {
+		String sql = "delete from product where id = ?";
+
+		PreparedStatement pst = getConnection().prepareStatement(sql);
+	
+		pst.setInt(1,Integer.parseInt(id) );
+
+
+		int result = pst.executeUpdate();
+
+		return result > 0;
+	}
+
+
+	
 }
